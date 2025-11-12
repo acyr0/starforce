@@ -25,6 +25,9 @@ although I can't promise I'll answer them super quickly.
 
 # Changelog
 
+## 2025-11-11
+Added new GMS ELT, EPT patch starforce system.
+
 ## 2025-03-13
 
 Added new KMS starforce system from KMST.
