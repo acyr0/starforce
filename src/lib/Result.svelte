@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_VALUES, expected_from_config } from "./calcs";
+  import { expected_from_config } from "./calcs";
   import type { Result } from "./calcs";
   import type { Config } from "./types";
 

@@ -38,7 +38,7 @@ const PROBABILITIES: { [star: number]: [number, number] } = {
   29: [0.01, 0.2],
 };
 
-// Starforce cost KMST.
+// Starforce cost KMS.
 const COST: { [star: number]: (level: number) => number } = {
   0: (level) => 100 * Math.round(10 + (level ** 3 * 1) / 2500),
   1: (level) => 100 * Math.round(10 + (level ** 3 * 2) / 2500),
@@ -72,23 +72,23 @@ const COST: { [star: number]: (level: number) => number } = {
   29: (level) => 100 * Math.round(10 + (level ** 3 * 30 ** 2.7) / 20000),
 };
 
-export const DEFAULT_VALUES = {
-  event_thirty_off: false,
-  event_destruction: false,
-  starcatch: [],
-  mvp_discount: 0,
-};
-
-// Compile error if we add new fields to `Config` and forget to add them to `DEFAULT_VALUES` above.
-(): Config => {
-  return {
-    item_level: 150,
-    item_from_star: 12,
-    item_to_star: 17,
-    replacement_cost: 0,
-    safeguard: false,
-    ...DEFAULT_VALUES,
-  };
+// Traces restore to a higher level depending on the starforce it boomed at.
+const RESTORE_LEVEL: { [star: number]: number } = {
+  15: 12,
+  16: 12,
+  17: 12,
+  18: 12,
+  19: 12,
+  20: 15,
+  21: 17,
+  22: 17,
+  23: 19,
+  24: 19,
+  25: 19,
+  26: 20,
+  27: 20,
+  28: 20,
+  29: 20,
 };
 
 const cost_and_odds = (config: Config, star: number) => {
@@ -118,7 +118,7 @@ const expected_cost_to_next = (config: Config, star: number, prior_costs: number
   const [c, s, d] = cost_and_odds(config, star);
 
   let F = 0;
-  for (let i = 12; i < star; i++) {
+  for (let i = RESTORE_LEVEL[star]; i < star; i++) {
     F += prior_costs[i];
   }
 
@@ -129,20 +129,14 @@ const expected_booms_to_next = (config: Config, star: number, prior_booms: numbe
   const [_c, s, d] = cost_and_odds(config, star);
 
   let F = 0;
-  for (let i = 12; i < star; i++) {
+  for (let i = RESTORE_LEVEL[star]; i < star; i++) {
     F += prior_booms[i];
   }
 
   return (d * (1 + F)) / s;
 };
 
-const prob_success_to_next = (config: Config, star: number, prior_prob_success: number[]) => {
-  // Intuitively, the value we want to compute is:
-  //     sum P(success from current star) * P(return to current star without booming) ^ n
-  //     n = 0 to infinity
-  // Because this is a geometric sum that always converges with the values we have, we easily have a
-  // closed form of:
-  //     P(success from current star) / (1 - P(return to current star without booming))
+const prob_success_to_next = (config: Config, star: number) => {
   const [_c, s, d] = cost_and_odds(config, star);
 
   return s / (s + d);
@@ -161,7 +155,7 @@ export const expected_from_config = (config: Config): Result => {
   for (let i = 0; i < MAX_STARS; i++) {
     cost_to_next_star[i] = expected_cost_to_next(config, i, cost_to_next_star);
     booms_to_next_star[i] = expected_booms_to_next(config, i, booms_to_next_star);
-    prob_success_to_next_star[i] = prob_success_to_next(config, i, prob_success_to_next_star);
+    prob_success_to_next_star[i] = prob_success_to_next(config, i);
   }
 
   let cost = 0;

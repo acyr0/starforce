@@ -21,7 +21,7 @@ export const DEFAULT_CONFIG: Config = {
   event_thirty_off: false,
   event_destruction: false,
   mvp_discount: 0,
-  starcatch: [],
+  starcatch: Array.from({ length: MAX_STARS - 12 }, (_, i) => i + 12),
 };
 
 export const make_config = (obj: any): Config => {
